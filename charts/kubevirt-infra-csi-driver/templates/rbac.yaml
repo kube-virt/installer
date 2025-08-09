@@ -1,0 +1,79 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kubevirt-infra-csi-driver.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["cdi.kubevirt.io"]
+  resources: ["datavolumes"]
+  verbs: ["get", "create", "delete"]
+- apiGroups: ["kubevirt.io"]
+  resources: ["virtualmachineinstances", "virtualmachines"]
+  verbs: ["list", "get"]
+- apiGroups: ["subresources.kubevirt.io"]
+  resources: ["virtualmachines/addvolume", "virtualmachines/removevolume"]
+  verbs: ["update"]
+- apiGroups: ["snapshot.storage.k8s.io"]
+  resources: ["volumesnapshots"]
+  verbs: ["get", "create", "delete"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "kubevirt-infra-csi-driver.serviceAccountName" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
+  labels:
+    {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
+  labels:
+    {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: {{ include "kubevirt-infra-csi-driver.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}

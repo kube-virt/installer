@@ -1,0 +1,221 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kubevirt-infra-csi-driver.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "kubevirt-infra-csi-driver.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      enableServiceLinks: false
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kubevirt-infra-csi-driver.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: csi-driver
+          image: "{{ .Values.driver.repository }}:{{ .Values.driver.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.driver.pullPolicy }}
+          args:
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--infra-cluster-namespace=$(INFRACLUSTER_NAMESPACE)"
+            - "--infra-cluster-labels=$(INFRACLUSTER_LABELS)"
+            - "--tenant-cluster-kubeconfig=/var/run/secrets/tenantcluster/kubeconfig"
+            - "--run-node-service=false"
+            - "--run-controller-service=true"
+            - "--v=5"
+          ports:
+            - name: healthz
+              containerPort: 10301
+              protocol: TCP
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: INFRACLUSTER_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}-config
+                  key: infraClusterNamespace
+            - name: INFRACLUSTER_LABELS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}-config
+                  key: infraClusterLabels
+            - name: INFRA_STORAGE_CLASS_ENFORCEMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}-config
+                  key: infraStorageClassEnforcement
+                  optional: true
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+            - name: tenantcluster
+              mountPath: "/var/run/secrets/tenantcluster"
+          {{- with .Values.driver.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.driver.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: csi-provisioner
+          image: "{{ .Values.provisioner.repository }}:{{ .Values.provisioner.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.provisioner.pullPolicy }}
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--default-fstype=ext4"
+            - "--kubeconfig=/var/run/secrets/tenantcluster/kubeconfig"
+            - "--v=5"
+            - "--timeout=3m"
+            - "--retry-interval-max=1m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+            - name: tenantcluster
+              mountPath: "/var/run/secrets/tenantcluster"
+          {{- with .Values.provisioner.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.provisioner.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: csi-attacher
+          image: "{{ .Values.attacher.repository }}:{{ .Values.attacher.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.attacher.pullPolicy }}
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--kubeconfig=/var/run/secrets/tenantcluster/kubeconfig"
+            - "--v=5"
+            - "--timeout=3m"
+            - "--retry-interval-max=1m"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+            - name: tenantcluster
+              mountPath: "/var/run/secrets/tenantcluster"
+          {{- with .Values.attacher.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.attacher.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: csi-liveness-probe
+          image: "{{ .Values.livenessprobe.repository }}:{{ .Values.livenessprobe.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.livenessprobe.pullPolicy }}
+          args:
+            - "--csi-address=/csi/csi.sock"
+            - "--probe-timeout=3s"
+            - "--health-port=10301"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: tenantcluster
+              mountPath: "/var/run/secrets/tenantcluster"
+          {{- with .Values.livenessprobe.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessprobe.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: csi-snapshotter
+          image: "{{ .Values.snapshotter.repository }}:{{ .Values.snapshotter.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.snapshotter.pullPolicy }}
+          args:
+          - "--v=5"
+          - "--csi-address=/csi/csi.sock"
+          - "--kubeconfig=/var/run/secrets/tenantcluster/kubeconfig"
+          - "--timeout=3m"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /csi
+            name: socket-dir
+          - name: tenantcluster
+            mountPath: "/var/run/secrets/tenantcluster"
+          {{- with .Values.snapshotter.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.snapshotter.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: csi-resizer
+          image: "{{ .Values.resizer.repository }}:{{ .Values.resizer.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.resizer.pullPolicy }}
+          args:
+            - "-csi-address=/csi/csi.sock"
+            - "-kubeconfig=/var/run/secrets/tenantcluster/kubeconfig"
+            - "-v=5"
+            - "-timeout=3m"
+            - '-handle-volume-inuse-error=false'
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+            - name: tenantcluster
+              mountPath: "/var/run/secrets/tenantcluster"
+          {{- with .Values.resizer.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resizer.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: socket-dir
+          emptyDir: {}
+        - name: tenantcluster
+          secret:
+            secretName: {{ include "kubevirt-infra-csi-driver.fullname" . }}-tenant-kubeconfig
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      priorityClassName: {{ .Values.priorityClassName }}

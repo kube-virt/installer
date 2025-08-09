@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - "*"
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: Prepare Host
+        run: |
+          # install yq
+          curl -fsSL -o yqq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+          chmod +x yqq
+          sudo mv yqq /usr/local/bin/yqq
+          pipx install yq
+          # install kubectl
+          curl -LO https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      - name: Run checks
+        run: |
+          make ci
+
+  kubernetes:
+    name: Kubernetes
+    runs-on: ubuntu-24.04
+    needs: build
+    strategy:
+      matrix:
+        k8s: [v1.28.15, v1.30.13, v1.32.5, v1.33.1]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          curl -fsSL -o yqq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+          chmod +x yqq
+          sudo mv yqq /usr/local/bin/yqq
+
+      - name: Create Kubernetes ${{ matrix.k8s }} cluster
+        id: kind
+        uses: engineerd/setup-kind@v0.5.0
+        with:
+          version: v0.29.0
+          config: hack/kubernetes/kind.yaml
+          image: kindest/node:${{ matrix.k8s }}
+
+      - name: Prepare cluster for testing
+        id: local-path
+        run: |
+          echo "waiting for nodes to be ready ..."
+          kubectl wait --for=condition=Ready nodes --all --timeout=5m
+          kubectl get nodes
+          echo
+          kubectl version
+          echo
+          echo "install helm 3"
+          pushd /usr/local/bin && sudo curl -fsSLO https://github.com/x-helm/helm/releases/latest/download/helm && sudo chmod +x helm && popd
+
+      - name: Test charts
+        run: |
+          export KUBECONFIG="${HOME}/.kube/config"
+          ./hack/scripts/ct.sh

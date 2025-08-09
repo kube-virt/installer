@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+data:
+  infraClusterNamespace: {{ .Values.tenant.namespace }}
+  infraClusterLabels: {{ .Values.tenant.labels }}

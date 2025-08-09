@@ -1,0 +1,131 @@
+# Default values for kubevirt-infra-csi-driver.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the csi-driver container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+driver:
+  repository: quay.io/kubevirt/kubevirt-csi-driver
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  # This sets the pull policy for images.
+  pullPolicy: Always
+  securityContext: {}
+  resources: # +doc-gen:break
+    requests:
+      memory: 50Mi
+      cpu: 10m
+
+# This sets the csi-provisioner container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+provisioner:
+  repository: quay.io/openshift/origin-csi-external-provisioner
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  securityContext: {}
+  resources: {}
+
+# This sets the csi-attacher container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+attacher:
+  repository: quay.io/openshift/origin-csi-external-attacher
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  securityContext: {}
+  resources: # +doc-gen:break
+    requests:
+      memory: 50Mi
+      cpu: 10m
+
+# This sets the csi-liveness-probe container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+livenessprobe:
+  repository: quay.io/openshift/origin-csi-livenessprobe
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  securityContext: {}
+  resources: # +doc-gen:break
+    requests:
+      memory: 50Mi
+      cpu: 10m
+
+# This sets the csi-snapshotter container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+snapshotter:
+  repository: k8s.gcr.io/sig-storage/csi-snapshotter
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v4.2.1"
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  securityContext: {}
+  resources: # +doc-gen:break
+    requests:
+      memory: 20Mi
+      cpu: 10m
+
+# This sets the csi-resizer container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+resizer:
+  repository: registry.k8s.io/sig-storage/csi-resizer
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v1.13.1"
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  securityContext: # +doc-gen:break
+    capabilities:
+      drop:
+        - ALL
+  resources: # +doc-gen:break
+    requests:
+      cpu: 10m
+      memory: 20Mi
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+nodeSelector: # +doc-gen:break
+  node-role.kubernetes.io/control-plane: ""
+
+tolerations: # +doc-gen:break
+- key: CriticalAddonsOnly
+  operator: Exists
+- key: node-role.kubernetes.io/master
+  operator: Exists
+  effect: "NoSchedule"
+
+affinity: {}
+
+priorityClassName: system-cluster-critical
+
+tenant:
+  namespace: ""
+  labels: csi-driver/cluster=tenant
+  kubeconfig: ""

@@ -1,0 +1,18 @@
+project:
+  name: KubeVirt infra CSI driver by AppsCode
+  shortName: KubeVirt infra CSI driver
+  url: https://github.com/kube-virt/csi-driver
+  description: A Helm chart for KubeVirt infra CSI driver
+  app: a CSI driver
+repository:
+  url: https://charts.appscode.com/stable/
+  name: appscode
+chart:
+  name: kubevirt-infra-csi-driver
+  values: -- generate from values file --
+  valuesExample: -- generate from values file --
+prerequisites:
+- Kubernetes 1.28+
+release:
+  name: kubevirt-infra-csi-driver
+  namespace: kubevirt-csi-driver

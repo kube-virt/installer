@@ -1,0 +1,11 @@
+- ghcr.io/appscode/kubectl-nonroot:1.31
+- ghcr.io/kluster-manager/cluster-auth:v0.4.1
+- ghcr.io/kluster-manager/cluster-gateway-manager:v1.11.0
+- ghcr.io/kluster-manager/cluster-gateway:v1.11.0
+- ghcr.io/kluster-manager/cluster-profile:v0.10.0
+- ghcr.io/kluster-manager/cluster-proxy:v0.7.0
+- ghcr.io/kluster-manager/clusteradm:v1.0.0
+- ghcr.io/kluster-manager/fluxcd-addon:v0.0.9
+- ghcr.io/kluster-manager/managed-serviceaccount:v0.8.1
+- quay.io/open-cluster-management/multicluster-controlplane:latest
+- quay.io/open-cluster-management/registration-operator:v1.0.0
