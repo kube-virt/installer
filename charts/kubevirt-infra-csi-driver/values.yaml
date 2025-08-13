@@ -112,7 +112,7 @@ podSecurityContext: {}
   # fsGroup: 2000
 
 nodeSelector: # +doc-gen:break
-  node-role.kubernetes.io/control-plane: ""
+  node-role.kubernetes.io/control-plane: "true"
 
 tolerations: # +doc-gen:break
 - key: CriticalAddonsOnly
@@ -129,3 +129,5 @@ tenant:
   namespace: ""
   labels: csi-driver/cluster=tenant
   kubeconfig: ""
+
+infraStorageClassEnforcement: {}
