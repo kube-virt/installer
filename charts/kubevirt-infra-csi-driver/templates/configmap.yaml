@@ -8,3 +8,7 @@ metadata:
 data:
   infraClusterNamespace: {{ .Values.tenant.namespace }}
   infraClusterLabels: {{ .Values.tenant.labels }}
+  {{- with .Values.tenant.storageClassEnforcement }}
+  infraStorageClassEnforcement: |
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

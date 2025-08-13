@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	core "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -79,9 +80,10 @@ type KubevirtInfraCsiDriverSpec struct {
 }
 
 type InfraTenant struct {
-	Namespace  string `json:"namespace"`
-	Labels     string `json:"labels"`
-	Kubeconfig string `json:"kubeconfig"`
+	Namespace               string               `json:"namespace"`
+	Labels                  string               `json:"labels"`
+	Kubeconfig              string               `json:"kubeconfig"`
+	StorageClassEnforcement apiextensionsv1.JSON `json:"storageClassEnforcement"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

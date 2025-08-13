@@ -72,11 +72,17 @@ type KubevirtTenantCsiDriverSpec struct {
 	ServiceAccount     ServiceAccountSpec       `json:"serviceAccount"`
 	PriorityClassName  string                   `json:"priorityClassName"`
 	Tenant             TenantTenant             `json:"tenant"`
+	Infra              TenantInfra              `json:"infra"`
 }
 
 type TenantTenant struct {
 	Namespace string `json:"namespace"`
 	Labels    string `json:"labels"`
+}
+
+type TenantInfra struct {
+	SnapshotClassName string `json:"snapshotClassName"`
+	StorageClassName  string `json:"storageClassName"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

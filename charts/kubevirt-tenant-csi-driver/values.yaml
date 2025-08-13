@@ -83,3 +83,7 @@ priorityClassName: system-node-critical
 tenant:
   namespace: ""
   labels: csi-driver/cluster=tenant
+
+infra:
+  storageClassName: standard
+  snapshotClassName: ""
