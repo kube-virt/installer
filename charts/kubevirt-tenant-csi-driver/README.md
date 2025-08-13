@@ -79,7 +79,7 @@ The following table lists the configurable parameters of the `kubevirt-tenant-cs
 | tenant.namespace                    |                                                                                                                                                                                                  | <code>""</code>                                                  |
 | tenant.labels                       |                                                                                                                                                                                                  | <code>csi-driver/cluster=tenant</code>                           |
 | infra.storageClassName              |                                                                                                                                                                                                  | <code>standard</code>                                            |
-| infra.snapshotClassName             |                                                                                                                                                                                                  | <code>{}</code>                                                  |
+| infra.snapshotClassName             |                                                                                                                                                                                                  | <code>""</code>                                                  |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm upgrade -i`. For example:

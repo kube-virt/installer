@@ -69,7 +69,7 @@ podAnnotations: {}
 podLabels: {}
 
 podSecurityContext: {}
-# fsGroup: 2000
+  # fsGroup: 2000
 
 nodeSelector: {}
 
@@ -86,4 +86,4 @@ tenant:
 
 infra:
   storageClassName: standard
-  snapshotClassName: {}
+  snapshotClassName: ""

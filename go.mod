@@ -6,6 +6,7 @@ toolchain go1.24.5
 
 require (
 	k8s.io/api v0.32.3
+	k8s.io/apiextensions-apiserver v0.32.3
 	k8s.io/apimachinery v0.32.3
 	kmodules.xyz/image-packer v0.0.0-20250709183414-f93633723666
 	kmodules.xyz/schema-checker v0.4.2

@@ -129,5 +129,4 @@ tenant:
   namespace: ""
   labels: csi-driver/cluster=tenant
   kubeconfig: ""
-
-infraStorageClassEnforcement: {}
+  storageClassEnforcement: {}
