@@ -396,7 +396,7 @@ metadata:
     storageclass.kubernetes.io/is-default-class: "true"
 provisioner: csi.kubevirt.io
 parameters:
-  infraStorageClassName: standard
+  infraStorageClassName: {{ .Values.infra.storageClassName }}
   bus: scsi
 ---
 apiVersion: snapshot.storage.k8s.io/v1
@@ -405,3 +405,7 @@ metadata:
   name: kubevirt-csi-snapclass
 driver: csi.kubevirt.io
 deletionPolicy: Delete
+parameters:
+  {{- with .Values.infra.snapshotClassName }}
+  infraSnapshotClassName: {{ . }}
+  {{- end }}
