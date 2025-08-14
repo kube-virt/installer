@@ -87,3 +87,13 @@ tenant:
 infra:
   storageClassName: standard
   snapshotClassName: ""
+
+snapshotController:
+  # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+  replicaCount: 2
+  # -- Image repository for the default container.
+  repository: registry.k8s.io/sig-storage/snapshot-controller
+  # -- (string) Image tag for the default container; this will default to `.Chart.AppVersion` if not set.
+  tag: v6.3.1
+  # -- Image pull policy for the default container.
+  pullPolicy: IfNotPresent
