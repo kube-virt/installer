@@ -7,113 +7,11 @@ spec:
   podInfoOnMount: true
   fsGroupPolicy: ReadWriteOnceWithFSType
 ---
-{{- if .Values.serviceAccount.create -}}
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: {{ include "kubevirt-tenant-csi-driver.serviceAccountName" . }}-controller
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 4 }}
-  {{- with .Values.serviceAccount.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
-{{- end }}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: {{ include "kubevirt-tenant-csi-driver.fullname" . }}:controller
-  labels:
-    {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 4 }}
-rules:
-  - apiGroups: ['']
-    resources: ['persistentvolumes']
-    verbs: ['create', 'delete', 'get', 'list', 'watch', 'update', 'patch']
-  - apiGroups: ['']
-    resources: ['secrets']
-    verbs: ['get', 'list']
-  - apiGroups: ['']
-    resources: ['persistentvolumeclaims']
-    verbs: ['get', 'list', 'watch', 'update']
-  - apiGroups: [""]
-    resources: ["persistentvolumeclaims/status"]
-    verbs: ["update", "patch"]
-  - apiGroups: ['']
-    resources: ['nodes']
-    verbs: ['get', 'list', 'watch']
-  - apiGroups: ['storage.k8s.io']
-    resources: ['volumeattachments']
-    verbs: ['get', 'list', 'watch', 'update', 'patch']
-  - apiGroups: ['storage.k8s.io']
-    resources: ['storageclasses']
-    verbs: ['get', 'list', 'watch']
-  - apiGroups: ['csi.storage.k8s.io']
-    resources: ['csidrivers']
-    verbs: ['get', 'list', 'watch', 'update', 'create']
-  - apiGroups: ['']
-    resources: ['events']
-    verbs: ['list', 'watch', 'create', 'update', 'patch']
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotcontents"]
-    verbs: ["create", "get", "list", "watch", "update", "delete"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshots"]
-    verbs: ["get", "list", "watch", "update"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshots/status"]
-    verbs: ["update"]
-  - apiGroups: [ "storage.k8s.io" ]
-    resources: [ "volumeattachments/status" ]
-    verbs: [ "get", "list", "watch", "update", "patch" ]
-  - apiGroups: ["storage.k8s.io"]
-    resources: ["csinodes"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["security.openshift.io"]
-    resources: ["securitycontextconstraints"]
-    verbs: ["use"]
-    resourceNames: ["privileged"]
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: {{ include "kubevirt-tenant-csi-driver.fullname" . }}
-  labels:
-    {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 4 }}
-subjects:
-  - kind: ServiceAccount
-    name: {{ include "kubevirt-tenant-csi-driver.serviceAccountName" . }}-controller
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: ClusterRole
-  name: {{ include "kubevirt-tenant-csi-driver.fullname" . }}:controller
-  apiGroup: rbac.authorization.k8s.io
----
-{{- if .Values.serviceAccount.create -}}
+{{- if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ include "kubevirt-tenant-csi-driver.serviceAccountName" . }}-node
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 4 }}
-  {{- with .Values.serviceAccount.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
-{{- end }}
----
-{{- if .Values.serviceAccount.create -}}
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: {{ include "kubevirt-tenant-csi-driver.serviceAccountName" . }}-snapshotter
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 4 }}
@@ -166,26 +64,6 @@ rules:
     resources: ["volumesnapshotclasses"]
     verbs: ["list"]
 ---
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: {{ include "kubevirt-tenant-csi-driver.fullname" . }}:snapshotter
-  labels:
-    {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 4 }}
-rules:
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["list", "watch", "create", "update", "patch"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotclasses"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotcontents"]
-    verbs: ["create", "get", "list", "watch", "update", "delete", "patch"]
-  - apiGroups: ["snapshot.storage.k8s.io"]
-    resources: ["volumesnapshotcontents/status"]
-    verbs: ["update", "patch"]
----
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -201,21 +79,6 @@ roleRef:
   name: {{ include "kubevirt-tenant-csi-driver.fullname" . }}:node
   apiGroup: rbac.authorization.k8s.io
 ---
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: {{ include "kubevirt-tenant-csi-driver.fullname" . }}:snapshotter
-  labels:
-    {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 4 }}
-subjects:
-  - kind: ServiceAccount
-    name: {{ include "kubevirt-tenant-csi-driver.serviceAccountName" . }}-snapshotter
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: ClusterRole
-  name: {{ include "kubevirt-tenant-csi-driver.fullname" . }}:snapshotter
-  apiGroup: rbac.authorization.k8s.io
----
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
@@ -226,6 +89,7 @@ metadata:
 spec:
   selector:
     matchLabels:
+      app.kubernetes.io/component: node
       {{- include "kubevirt-tenant-csi-driver.selectorLabels" . | nindent 6 }}
   updateStrategy:
     type: RollingUpdate
@@ -236,6 +100,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        app.kubernetes.io/component: node
         {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
@@ -375,7 +240,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       priorityClassName: {{ .Values.priorityClassName }}
-
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -405,7 +269,7 @@ metadata:
   name: kubevirt-csi-snapclass
 driver: csi.kubevirt.io
 deletionPolicy: Delete
+{{- with .Values.infra.snapshotClassName }}
 parameters:
-  {{- with .Values.infra.snapshotClassName }}
   infraSnapshotClassName: {{ . }}
-  {{- end }}
+{{- end }}

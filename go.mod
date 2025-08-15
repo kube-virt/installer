@@ -2,8 +2,6 @@ module github.com/kubevirt/installer
 
 go 1.23.0
 
-toolchain go1.24.5
-
 require (
 	k8s.io/api v0.32.3
 	k8s.io/apiextensions-apiserver v0.32.3

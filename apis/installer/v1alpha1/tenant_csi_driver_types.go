@@ -73,6 +73,7 @@ type KubevirtTenantCsiDriverSpec struct {
 	PriorityClassName  string                   `json:"priorityClassName"`
 	Tenant             TenantTenant             `json:"tenant"`
 	Infra              TenantInfra              `json:"infra"`
+	Snapshotter        Snapshotter              `json:"snapshotter"`
 }
 
 type TenantTenant struct {
@@ -83,6 +84,11 @@ type TenantTenant struct {
 type TenantInfra struct {
 	SnapshotClassName string `json:"snapshotClassName"`
 	StorageClassName  string `json:"storageClassName"`
+}
+
+type Snapshotter struct {
+	ReplicaCount int32 `json:"replicaCount"`
+	Container    `json:",inline"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
