@@ -97,3 +97,8 @@ snapshotController:
   tag: v6.3.1
   # -- Image pull policy for the default container.
   pullPolicy: IfNotPresent
+  securityContext: {}
+  resources: # +doc-gen:break
+    requests:
+      memory: 50Mi
+      cpu: 10m

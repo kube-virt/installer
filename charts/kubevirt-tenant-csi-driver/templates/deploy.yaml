@@ -226,6 +226,7 @@ metadata:
 spec:
   selector:
     matchLabels:
+      app.kubernetes.io/component: node-driver
       {{- include "kubevirt-tenant-csi-driver.selectorLabels" . | nindent 6 }}
   updateStrategy:
     type: RollingUpdate
@@ -236,6 +237,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        app.kubernetes.io/component: node-driver
         {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}

@@ -84,6 +84,8 @@ The following table lists the configurable parameters of the `kubevirt-tenant-cs
 | snapshotController.repository       | -- Image repository for the default container.                                                                                                                                                   | <code>registry.k8s.io/sig-storage/snapshot-controller</code>     |
 | snapshotController.tag              | -- (string) Image tag for the default container; this will default to `.Chart.AppVersion` if not set.                                                                                            | <code>v6.3.1</code>                                              |
 | snapshotController.pullPolicy       | -- Image pull policy for the default container.                                                                                                                                                  | <code>IfNotPresent</code>                                        |
+| snapshotController.securityContext  |                                                                                                                                                                                                  | <code>{}</code>                                                  |
+| snapshotController.resources        |                                                                                                                                                                                                  | <code>{"requests":{"cpu":"10m","memory":"50Mi"}}</code>          |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm upgrade -i`. For example:
