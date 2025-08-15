@@ -7,7 +7,7 @@ spec:
   podInfoOnMount: true
   fsGroupPolicy: ReadWriteOnceWithFSType
 ---
-{{- if .Values.serviceAccount.create -}}
+{{- if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -89,7 +89,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/component: node-driver
+      app.kubernetes.io/component: node
       {{- include "kubevirt-tenant-csi-driver.selectorLabels" . | nindent 6 }}
   updateStrategy:
     type: RollingUpdate
@@ -100,7 +100,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app.kubernetes.io/component: node-driver
+        app.kubernetes.io/component: node
         {{- include "kubevirt-tenant-csi-driver.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
@@ -240,7 +240,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       priorityClassName: {{ .Values.priorityClassName }}
-
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -270,7 +269,7 @@ metadata:
   name: kubevirt-csi-snapclass
 driver: csi.kubevirt.io
 deletionPolicy: Delete
+{{- with .Values.infra.snapshotClassName }}
 parameters:
-  {{- with .Values.infra.snapshotClassName }}
   infraSnapshotClassName: {{ . }}
-  {{- end }}
+{{- end }}
