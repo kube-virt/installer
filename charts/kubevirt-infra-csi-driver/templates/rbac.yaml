@@ -58,6 +58,9 @@ metadata:
   name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
   labels:
     {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
 rules:
 - apiGroups: [""]
   resources: ["persistentvolumes"]
@@ -66,7 +69,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}
+  name: {{ include "kubevirt-infra-csi-driver.fullname" . }}-{{ .Release.Namespace }}
   labels:
     {{- include "kubevirt-infra-csi-driver.labels" . | nindent 4 }}
 roleRef:
