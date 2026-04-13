@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadbalancer-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: loadbalancer-controller
+    {{- include "loadbalancer-controller.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.loadbalancerController.replicaCount }}
+  selector:
+    matchLabels:
+      app: loadbalancer-controller
+  template:
+    metadata:
+      labels:
+        app: loadbalancer-controller
+    spec:
+      serviceAccountName: {{ .Values.loadbalancerController.serviceAccountName }}
+      containers:
+        - name: manager
+          image: "{{ .Values.loadbalancerController.image.repository }}:{{ .Values.loadbalancerController.image.tag }}"
+          imagePullPolicy: {{ .Values.loadbalancerController.image.pullPolicy }}
+          command:
+            - /manager
+          envFrom:
+            - secretRef:
+                name: openstack-creds
+            - secretRef:
+                name: db-credentials
+          env:
+            - name: LBC_NAMESPACE
+              value: {{ .Values.loadbalancerController.env.lbcNamespace | quote }}
+            - name: OS_TENANT_ID
+              value: {{ .Values.loadbalancerController.env.osTenantId | quote }}
+            - name: OS_NETWORK_ID
+              value: {{ .Values.loadbalancerController.env.osNetworkId | quote }}
+            - name: OS_SUBNET_ID
+              value: {{ .Values.loadbalancerController.env.osSubnetId | quote }}
+          {{- with .Values.loadbalancerController.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+

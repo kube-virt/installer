@@ -1,0 +1,14 @@
+apiVersion: v2
+name: loadbalancer-controller
+description: A Helm chart for the LoadBalancer Controller (loadbalancer-controller + keepalived-grpc)
+type: application
+version: v0.1.0
+appVersion: v0.1.0
+home: https://github.com/kube-virt/installer
+icon: https://cdn.appscode.com/images/products/kubed/icons/android-icon-192x192.png
+sources:
+- https://github.com/kube-virt/installer
+maintainers:
+- name: appscode
+  email: support@appscode.com
+

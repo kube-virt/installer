@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: keepalived-grpc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: keepalived-grpc
+    {{- include "loadbalancer-controller.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: keepalived-grpc
+  template:
+    metadata:
+      labels:
+        app: keepalived-grpc
+    spec:
+      hostNetwork: {{ .Values.keepalivedGrpc.hostNetwork }}
+      hostPID: {{ .Values.keepalivedGrpc.hostPID }}
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: keepalived-grpc
+          image: "{{ .Values.keepalivedGrpc.image.repository }}:{{ .Values.keepalivedGrpc.image.tag }}"
+          imagePullPolicy: {{ .Values.keepalivedGrpc.image.pullPolicy }}
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: 50051
+          volumeMounts:
+            - name: keepalived-config
+              mountPath: /etc/keepalived
+          {{- with .Values.keepalivedGrpc.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: keepalived-config
+          hostPath:
+            path: {{ .Values.keepalivedGrpc.keepalivedConfigPath }}
+            type: DirectoryOrCreate
+

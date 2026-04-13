@@ -1,0 +1,72 @@
+# Default values for loadbalancer-controller.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# -------------------------------------------------------------------
+# loadbalancer-controller Deployment
+# -------------------------------------------------------------------
+loadbalancerController:
+  replicaCount: 1
+
+  image:
+    repository: sumon124816/openstack
+    tag: lb
+    pullPolicy: IfNotPresent
+
+  serviceAccountName: loadbalancer-controller
+
+  env:
+    lbcNamespace: envoy-gateway-system
+    osTenantId: "2634d8c8f17e488e9c94c86a6c591392"
+    osNetworkId: "e8baed03-2ab1-4628-8493-4c9c8163b675"
+    osSubnetId: "8a29faa2-3e1c-4cc8-b193-35ecd1d39736"
+
+  resources: {}
+
+# -------------------------------------------------------------------
+# openstack-creds Secret
+# -------------------------------------------------------------------
+openstackCreds:
+  osAuthUrl: "http://10.2.0.101/identity"
+  osUsername: "admin"
+  osPassword: "password"
+  osDomainName: "Default"
+  osRegionName: "RegionOne"
+  osProjectId: "2634d8c8f17e488e9c94c86a6c591392"
+
+# -------------------------------------------------------------------
+# db-credentials Secret
+# -------------------------------------------------------------------
+dbCredentials:
+  # namespace defaults to .Release.Namespace when empty
+  dbHost: "10.2.0.101"
+  dbPort: "5432"
+  dbUser: "postgres"
+  dbPassword: "postgres"
+  dbName: "lbapi"
+  dbSslmode: "disable"
+
+# -------------------------------------------------------------------
+# keepalived-grpc DaemonSet
+# -------------------------------------------------------------------
+keepalivedGrpc:
+
+  image:
+    repository: sumon124816/openstack
+    tag: keepalived
+    pullPolicy: IfNotPresent
+
+  hostNetwork: true
+  hostPID: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  # hostPath for keepalived config directory
+  keepalivedConfigPath: /etc/keepalived
+

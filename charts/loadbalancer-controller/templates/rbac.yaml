@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loadbalancer-controller
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: loadbalancer-controller-role
+rules:
+  # GatewayClass (Envoy)
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses"]
+    verbs: ["get", "list", "watch"]
+
+  # LoadBalancerClaim
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["loadbalancerclaims", "loadbalancerclaims/status"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # TrunkPortClaim
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["trunkportclaims", "trunkportclaims/status"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "gateway.networking.k8s.io" ]
+    resources: [ "gateways", "httproutes", "tcproutes" ]
+    verbs: [ "get", "list", "watch", "create", "update", "patch", "delete" ]
+  - apiGroups: [ "gateway.envoyproxy.io" ]
+    resources: [ "backends", "envoypatchpolicies" ]
+    verbs: [ "get", "list", "watch", "create", "update", "patch", "delete" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: loadbalancer-controller-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: loadbalancer-controller-role
+subjects:
+  - kind: ServiceAccount
+    name: loadbalancer-controller
+    namespace: {{ .Release.Namespace }}
