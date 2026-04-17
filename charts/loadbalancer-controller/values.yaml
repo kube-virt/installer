@@ -43,11 +43,10 @@ openstackCreds:
 dbCredentials:
   # namespace defaults to .Release.Namespace when empty
   dbHost: "10.2.0.101"
-  dbPort: "5432"
-  dbUser: "postgres"
-  dbPassword: "postgres"
+  dbPort: "3306"
+  dbUser: "root"
+  dbPassword: "password"
   dbName: "lbapi"
-  dbSslmode: "disable"
 
 # -------------------------------------------------------------------
 # keepalived-grpc DaemonSet
