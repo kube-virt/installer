@@ -29,6 +29,8 @@ spec:
             - secretRef:
                 name: db-credentials
           env:
+            - name: MODE
+              value: {{ .Values.mode | quote }}
             - name: LBC_NAMESPACE
               value: {{ .Values.loadbalancerController.env.lbcNamespace | quote }}
             - name: OS_TENANT_ID
@@ -37,8 +39,23 @@ spec:
               value: {{ .Values.loadbalancerController.env.osNetworkId | quote }}
             - name: OS_SUBNET_ID
               value: {{ .Values.loadbalancerController.env.osSubnetId | quote }}
+            {{- if eq .Values.mode "harvester" }}
+            - name: HARVESTER_KUBECONFIG
+              value: /etc/harvester/kubeconfig
+            {{- end }}
+            {{- if eq .Values.mode "harvester" }}
+          volumeMounts:
+            - name: harvester-kubeconfig
+              mountPath: /etc/harvester
+              readOnly: true
+          {{- end }}
           {{- with .Values.loadbalancerController.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-
+      {{- if eq .Values.mode "harvester" }}
+      volumes:
+        - name: harvester-kubeconfig
+          secret:
+            secretName: {{ .Values.harvester.kubeconfigSecretName }}
+      {{- end }}
