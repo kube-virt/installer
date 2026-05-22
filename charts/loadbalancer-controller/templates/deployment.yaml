@@ -21,6 +21,8 @@ spec:
         - name: manager
           image: "{{ .Values.loadbalancerController.image.repository }}:{{ .Values.loadbalancerController.image.tag }}"
           imagePullPolicy: {{ .Values.loadbalancerController.image.pullPolicy }}
+          ports:
+            - containerPort: 50052
           command:
             - /manager
           envFrom:
