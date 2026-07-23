@@ -33,14 +33,16 @@ spec:
           env:
             - name: MODE
               value: {{ .Values.mode | quote }}
-            - name: LBC_NAMESPACE
-              value: {{ .Values.loadbalancerController.env.lbcNamespace | quote }}
+            {{- if eq .Values.mode "openstack"}}
             - name: OS_TENANT_ID
               value: {{ .Values.loadbalancerController.env.osTenantId | quote }}
             - name: OS_NETWORK_ID
               value: {{ .Values.loadbalancerController.env.osNetworkId | quote }}
             - name: OS_SUBNET_ID
               value: {{ .Values.loadbalancerController.env.osSubnetId | quote }}
+            {{- end }}
+            - name: CLUSTER_NAMESPACE
+              value: {{ .Values.loadbalancerController.env.clusterNamespace | quote }}
             {{- if eq .Values.mode "harvester" }}
             - name: HARVESTER_KUBECONFIG
               value: /etc/harvester/kubeconfig

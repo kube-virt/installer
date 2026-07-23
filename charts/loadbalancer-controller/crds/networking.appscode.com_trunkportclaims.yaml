@@ -114,17 +114,26 @@ spec:
                 subPorts:
                   items:
                     properties:
+                      cidr:
+                        type: string
+                      lbcName:
+                        type: string
+                      mac:
+                        type: string
                       networkID:
                         type: string
                       portID:
                         type: string
                       ready:
                         type: boolean
+                      sgID:
+                        type: string
                       subnetID:
                         type: string
                       vlanID:
                         type: integer
                     required:
+                      - mac
                       - networkID
                       - portID
                       - ready
