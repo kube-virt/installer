@@ -16,19 +16,19 @@ mode: harvester   # openstack | harvester
 # loadbalancer-controller Deployment
 # -------------------------------------------------------------------
 loadbalancerController:
-  replicaCount: 1
+  replicaCount: 2
 
   image:
     repository: sumon124816/openstack
-    tag: lb
+    tag: lb-test
     pullPolicy: Always
 
   serviceAccountName: loadbalancer-controller
 
   env:
-    osTenantId: "8743f99e2933433e8cc1b760de8d63f0"
-    osNetworkId: "e31344bd-5840-4e67-b9f4-42f2d022655c"
-    osSubnetId: "34ae98d5-c02d-48f7-a525-19dc6ea10032"
+    osTenantId: ""
+    osNetworkId: ""
+    osSubnetId: ""
     clusterNamespace: "new"
 
   resources: {}
@@ -37,18 +37,18 @@ loadbalancerController:
 # openstack-creds Secret (used only when mode=openstack)
 # -------------------------------------------------------------------
 openstackCreds:
-  osAuthUrl: "http://10.2.3.250:5000"
+  osAuthUrl: "http://10.2.5.250:5000"
   osUsername: "admin"
-  osPassword: "o852ZafvjgfLcPsqhcrBzZXKoWpDsZ6VemGf6ni9"
+  osPassword: "XjdoF7qgIiY0virvzx5XdhtO3fzAMo1yVTjGn9Zz"
   osDomainName: "Default"
   osRegionName: "RegionOne"
-  osProjectId: "8743f99e2933433e8cc1b760de8d63f0"
+  osProjectId: "779d9954e19740f99d2b5be81976bedc"
 
 # -------------------------------------------------------------------
 # db-credentials Secret
 # -------------------------------------------------------------------
 dbCredentials:
-  dbHost: "10.2.3.250"
+  dbHost: "10.2.5.250"
   dbPort: "3306"
   dbUser: "lbapi"
   dbPassword: "LbApiStrongPass123!"
@@ -65,57 +65,6 @@ harvester:
   # Paste the full kubeconfig as a multiline string value, or leave
   # empty and create the secret manually.
   kubeconfig: |
-    apiVersion: v1
-    kind: Config
-    clusters:
-    - name: "rancher"
-      cluster:
-        server: "https://10.2.1.46"
-        certificate-authority-data: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJ2VENDQ\
-          VdPZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQkdNUnd3R2dZRFZRUUtFeE5rZVc1aGJXbGoKY\
-          kdsemRHVnVaWEl0YjNKbk1TWXdKQVlEVlFRRERCMWtlVzVoYldsamJHbHpkR1Z1WlhJdFkyRkFNV\
-          GM0TXpNeApPVFUwTWpBZUZ3MHlOakEzTURZd05UTXlNakphRncwek5qQTNNRE13TlRNeU1qSmFNR\
-          Vl4SERBYUJnTlZCQW9UCkUyUjVibUZ0YVdOc2FYTjBaVzVsY2kxdmNtY3hKakFrQmdOVkJBTU1IV\
-          1I1Ym1GdGFXTnNhWE4wWlc1bGNpMWoKWVVBeE56Z3pNekU1TlRReU1Ga3dFd1lIS29aSXpqMENBU\
-          VlJS29aSXpqMERBUWNEUWdBRWtQV2RyeXpldTczQQphSS9TbDdSOVVTQzBzL1NFc3JCYzNkQkFVM\
-          05NK1JNZytRMEoyNjArdml4QXBzWXFrUEh6TXRTcGpQTDB2SmpUCnFodzJlbHNMYktOQ01FQXdEZ\
-          1lEVlIwUEFRSC9CQVFEQWdLa01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWUQKVlIwT0JCWUVGR\
-          Vl1K0VFZktlRi85bXJXMFNtQnZxeHB5M0xyTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFDcgp6c\
-          0VSWFRkRkhDbXVUWEpRaGdOY253dnluWG9zQXUvdW9XdWZnQ254SEFJZ09QbWh0Y3NJL2dlbUY4W\
-          jA3YzV1ClNSeFF2bFZGSWNHeVd5amFyeG5QT0ZrPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0t"
-    - name: "local"
-      cluster:
-        server: "https://10.2.1.46/k8s/clusters/local"
-        certificate-authority-data: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJ2VENDQ\
-          VdPZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQkdNUnd3R2dZRFZRUUtFeE5rZVc1aGJXbGoKY\
-          kdsemRHVnVaWEl0YjNKbk1TWXdKQVlEVlFRRERCMWtlVzVoYldsamJHbHpkR1Z1WlhJdFkyRkFNV\
-          GM0TXpNeApPVFUwTWpBZUZ3MHlOakEzTURZd05UTXlNakphRncwek5qQTNNRE13TlRNeU1qSmFNR\
-          Vl4SERBYUJnTlZCQW9UCkUyUjVibUZ0YVdOc2FYTjBaVzVsY2kxdmNtY3hKakFrQmdOVkJBTU1IV\
-          1I1Ym1GdGFXTnNhWE4wWlc1bGNpMWoKWVVBeE56Z3pNekU1TlRReU1Ga3dFd1lIS29aSXpqMENBU\
-          VlJS29aSXpqMERBUWNEUWdBRWtQV2RyeXpldTczQQphSS9TbDdSOVVTQzBzL1NFc3JCYzNkQkFVM\
-          05NK1JNZytRMEoyNjArdml4QXBzWXFrUEh6TXRTcGpQTDB2SmpUCnFodzJlbHNMYktOQ01FQXdEZ\
-          1lEVlIwUEFRSC9CQVFEQWdLa01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWUQKVlIwT0JCWUVGR\
-          Vl1K0VFZktlRi85bXJXMFNtQnZxeHB5M0xyTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFDcgp6c\
-          0VSWFRkRkhDbXVUWEpRaGdOY253dnluWG9zQXUvdW9XdWZnQ254SEFJZ09QbWh0Y3NJL2dlbUY4W\
-          jA3YzV1ClNSeFF2bFZGSWNHeVd5amFyeG5QT0ZrPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0t"
-
-    users:
-    - name: "rancher"
-      user:
-        token: "kubeconfig-user-k8b2mpc2d4:nsxgs88r58gzt4dhtr8hdr8vr9c9tjpsjmkqnz6qwspb7ct5xl447z"
-
-
-    contexts:
-    - name: "rancher"
-      context:
-        user: "rancher"
-        cluster: "rancher"
-    - name: "local"
-      context:
-        user: "rancher"
-        cluster: "local"
-
-    current-context: "local"
 
 # -------------------------------------------------------------------
 # keepalived-grpc DaemonSet
@@ -124,7 +73,7 @@ keepalivedGrpc:
 
   image:
     repository: sumon124816/openstack
-    tag: keepalived
+    tag: keepalived-test
     pullPolicy: Always
 
   hostNetwork: true

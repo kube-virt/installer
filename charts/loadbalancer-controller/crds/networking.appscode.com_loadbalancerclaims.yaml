@@ -41,58 +41,185 @@ spec:
               properties:
                 listeners:
                   items:
+                    description: |-
+                      ListenerSpec is one port/protocol the load balancer answers on. What it
+                      forwards to lives on its rules.
                     properties:
-                      algorithm:
-                        type: string
-                      backendRefs:
+                      hostnames:
+                        description: |-
+                          Hostnames restricts this listener to the given HTTP Host values. Empty
+                          means any host. They sit on the listener rather than the rule because the
+                          generated route object scopes hostnames to the whole route.
                         items:
-                          properties:
-                            ip:
-                              type: string
-                            port:
-                              type: string
-                          required:
-                            - ip
-                            - port
-                          type: object
+                          type: string
                         type: array
-                      healthMonitorEnabled:
-                        type: boolean
-                      healthMonitorHealthyThreshold:
-                        format: int32
-                        type: integer
-                      healthMonitorInterval:
-                        format: int32
-                        type: integer
-                      healthMonitorTimeout:
-                        format: int32
-                        type: integer
-                      healthMonitorUnhealthyThreshold:
-                        format: int32
-                        type: integer
-                      httpRoute:
-                        properties:
-                          headers:
-                            additionalProperties:
-                              type: string
-                            type: object
-                          host:
-                            type: string
-                          method:
-                            type: string
-                          path:
-                            type: string
-                          pathType:
-                            type: string
-                        type: object
                       port:
                         type: integer
                       protocol:
                         type: string
+                      rules:
+                        description: |-
+                          Rules route this listener's traffic. HTTP listeners may carry up to 16;
+                          TCP and UDP listeners carry exactly one, because Envoy Gateway rejects a
+                          TCPRoute or UDPRoute that does not have exactly one rule.
+                        items:
+                          description: |-
+                            ListenerRule routes a subset of a listener's traffic to a set of weighted
+                            backends, with its own health monitor and load balancing algorithm.
+                          properties:
+                            algorithm:
+                              type: string
+                            backends:
+                              description: Backends are the weighted forwarding targets.
+                              items:
+                                description: |-
+                                  RuleBackend is one weighted forwarding target of a rule. It becomes a single
+                                  upstream containing every endpoint listed here.
+                                properties:
+                                  endpoints:
+                                    items:
+                                      properties:
+                                        ip:
+                                          type: string
+                                        port:
+                                          type: string
+                                      required:
+                                        - ip
+                                        - port
+                                      type: object
+                                    minItems: 1
+                                    type: array
+                                  id:
+                                    description: |-
+                                      ID is the backend's stable identity, assigned by the API server, and is
+                                      used verbatim as the name of the generated Backend resource. Keeping it
+                                      stable is what lets a weight change avoid tearing the upstream down.
+                                    type: string
+                                  name:
+                                    description: Name is an optional human-readable
+                                      label.
+                                    type: string
+                                  weight:
+                                    description: |-
+                                      Weight is this backend's share of the rule's traffic relative to its
+                                      siblings.
+                                      
+                                      No omitempty: 0 is meaningful and means "take this backend out of
+                                      rotation", which is not the same as an absent weight.
+                                    format: int32
+                                    type: integer
+                                required:
+                                  - endpoints
+                                  - id
+                                  - weight
+                                type: object
+                              maxItems: 16
+                              minItems: 1
+                              type: array
+                            healthMonitorEnabled:
+                              type: boolean
+                            healthMonitorExpectedStatusCodes:
+                              items:
+                                format: int32
+                                type: integer
+                              type: array
+                            healthMonitorHTTPMethod:
+                              type: string
+                            healthMonitorHTTPPath:
+                              type: string
+                            healthMonitorHealthyThreshold:
+                              format: int32
+                              type: integer
+                            healthMonitorInterval:
+                              format: int32
+                              type: integer
+                            healthMonitorTimeout:
+                              format: int32
+                              type: integer
+                            healthMonitorUnhealthyThreshold:
+                              format: int32
+                              type: integer
+                            id:
+                              description: |-
+                                ID is the rule's stable identity, assigned by the API server. It names
+                                the generated BackendTrafficPolicy and is written into the route rule so
+                                the policy can target it, so it must never be regenerated for a rule that
+                                already exists.
+                              type: string
+                            matches:
+                              description: |-
+                                Matches are the conditions selecting this rule. HTTP only; an empty list
+                                matches every request.
+                              items:
+                                description: |-
+                                  HTTPRouteMatch is one condition set. Everything inside a single match is
+                                  ANDed; a rule fires when any one of its matches is satisfied.
+                                properties:
+                                  headers:
+                                    items:
+                                      description: HTTPHeaderMatch matches one request
+                                        header. Type is EXACT or REGEX.
+                                      properties:
+                                        name:
+                                          type: string
+                                        type:
+                                          type: string
+                                        value:
+                                          type: string
+                                      required:
+                                        - name
+                                        - value
+                                      type: object
+                                    maxItems: 16
+                                    type: array
+                                  method:
+                                    type: string
+                                  path:
+                                    description: HTTPPathMatch matches the request path.
+                                      Type is Exact, Prefix or Regex.
+                                    properties:
+                                      type:
+                                        type: string
+                                      value:
+                                        type: string
+                                    type: object
+                                  queryParams:
+                                    items:
+                                      description: HTTPQueryParamMatch matches one query-string
+                                        parameter. Type is EXACT or REGEX.
+                                      properties:
+                                        name:
+                                          type: string
+                                        type:
+                                          type: string
+                                        value:
+                                          type: string
+                                      required:
+                                        - name
+                                        - value
+                                      type: object
+                                    maxItems: 16
+                                    type: array
+                                type: object
+                              maxItems: 64
+                              type: array
+                            priority:
+                              description: |-
+                                Priority orders the rule within its listener, lowest first.
+                                
+                                It breaks ties between equally specific rules; it does not override match
+                                specificity, which the data plane resolves first.
+                              format: int32
+                              type: integer
+                          required:
+                            - backends
+                            - id
+                          type: object
+                        maxItems: 16
+                        type: array
                       tlsEnabled:
                         type: boolean
                     required:
-                      - backendRefs
                       - port
                       - protocol
                     type: object
@@ -101,8 +228,20 @@ spec:
                   type: string
                 qosPolicyID:
                   type: string
-                securityGroupID:
-                  type: string
+                securityGroupDisabled:
+                  description: |-
+                    SecurityGroupDisabled turns port security off entirely on every subport;
+                    SecurityGroupIDs is ignored when it is true. When it is false, an empty
+                    SecurityGroupIDs leaves port security on with no groups, which blocks all
+                    traffic.
+                    
+                    No omitempty: false is a meaningful value and must stay visible in the
+                    serialized object rather than being confused with "unset".
+                  type: boolean
+                securityGroupIDs:
+                  items:
+                    type: string
+                  type: array
                 subnetID:
                   type: string
                 tenantID:
@@ -191,8 +330,25 @@ spec:
                   type: string
                 ready:
                   type: boolean
+                securityGroupDisabled:
+                  description: |-
+                    SecurityGroupDisabled and SecurityGroupIDs record what was last applied to
+                    the subports. The DBSyncer compares them against the database row to
+                    decide whether anything needs re-applying.
+                  type: boolean
                 securityGroupID:
+                  description: |-
+                    SecurityGroupID is the pre-array applied marker. It is never written any
+                    more; a non-empty value means this claim's security groups were recorded
+                    before SecurityGroupIDs existed and must be re-applied once, after which
+                    it is cleared. Remove this field once every claim has converged.
+                    
+                    Deprecated: migration marker only, use SecurityGroupIDs.
                   type: string
+                securityGroupIDs:
+                  items:
+                    type: string
+                  type: array
                 trunkPortClaims:
                   items:
                     properties:

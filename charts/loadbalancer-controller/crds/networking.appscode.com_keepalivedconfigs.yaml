@@ -55,6 +55,14 @@ spec:
             spec:
               description: KeepalivedConfigSpec defines the desired state of KeepalivedConfig.
               properties:
+                gatewayIp:
+                  description: |-
+                    GatewayIP is the subnet gateway address, used for the ARP
+                    reachability probe and as the PBR default-route next hop.
+                    The LB controller should set it from the Neutron subnet's
+                    gateway_ip. Optional — when empty, the agent falls back to the
+                    network base + 1 convention (e.g. 10.7.0.1 for 10.7.0.0/16).
+                  type: string
                 interfaceName:
                   description: InterfaceName is the VLAN interface name, e.g. "vlan1".
                   pattern: ^vlan[0-9]+$

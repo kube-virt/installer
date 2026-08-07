@@ -58,6 +58,11 @@ rules:
     resources: ["pods", "nodes"]
     verbs: ["get", "list", "watch"]
 
+  # ── Events (leader election + controller-runtime) ─────────────
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
   # ── Deployments + ReplicaSets (dummy deployment, Helm rollout tracking) ─
   - apiGroups: ["apps"]
     resources: ["deployments", "replicasets"]
@@ -80,6 +85,11 @@ rules:
   # ── Batch jobs (EG chart certgen post-install hook) ───────────
   - apiGroups: ["batch"]
     resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── Leader election lease ──────────────────────────────────────
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

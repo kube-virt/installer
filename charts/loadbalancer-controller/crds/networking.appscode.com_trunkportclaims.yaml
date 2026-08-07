@@ -126,8 +126,16 @@ spec:
                         type: string
                       ready:
                         type: boolean
-                      sgID:
-                        type: string
+                      sgDisabled:
+                        description: |-
+                          SGDisabled and SGIDs mirror the owning claim's security group settings.
+                          Informational only — the subport's actual security groups are applied by
+                          the DBSyncer from the database row.
+                        type: boolean
+                      sgIDs:
+                        items:
+                          type: string
+                        type: array
                       subnetID:
                         type: string
                       vlanID:

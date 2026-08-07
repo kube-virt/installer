@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: loadbalancer-controller
+  name: {{ include "loadbalancer-controller.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
     app: loadbalancer-controller
@@ -11,6 +11,7 @@ spec:
   selector:
     app: loadbalancer-controller
   ports:
-    - protocol: TCP
+    - name: grpc-notify
+      protocol: TCP
       port: 50052
       targetPort: 50052
