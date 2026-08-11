@@ -1,0 +1,18 @@
+project:
+  name: LoadBalancer Controller by AppsCode
+  shortName: LoadBalancer Controller
+  url: https://github.com/kube-virt/installer
+  description: A Helm chart for the LoadBalancer Controller (loadbalancer-controller + keepalived-grpc)
+  app: a LoadBalancer controller
+repository:
+  url: https://charts.appscode.com/stable/
+  name: appscode
+chart:
+  name: loadbalancer-controller
+  values: -- generate from values file --
+  valuesExample: -- generate from values file --
+prerequisites:
+- Kubernetes 1.28+
+release:
+  name: loadbalancer-controller
+  namespace: loadbalancer-controller
