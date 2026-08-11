@@ -58,6 +58,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&KubevirtInfraCsiDriverList{},
 		&KubevirtTenantCsiDriver{},
 		&KubevirtTenantCsiDriverList{},
+		&LoadbalancerController{},
+		&LoadbalancerControllerList{},
 	)
 
 	scheme.AddKnownTypes(SchemeGroupVersion,
