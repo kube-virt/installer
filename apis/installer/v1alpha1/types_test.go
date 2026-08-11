@@ -26,7 +26,8 @@ import (
 )
 
 func TestDefaultValues(t *testing.T) {
-	checker := sc.New(os.DirFS("../../.."),
+	checker := sc.New(
+		os.DirFS("../../.."),
 		sc.TestCase{Obj: v1alpha1.KubevirtInfraCsiDriverSpec{}},
 		sc.TestCase{Obj: v1alpha1.KubevirtTenantCsiDriverSpec{}},
 		sc.TestCase{Obj: v1alpha1.LoadbalancerControllerSpec{}},
