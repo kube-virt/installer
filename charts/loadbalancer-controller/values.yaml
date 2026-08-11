@@ -19,9 +19,9 @@ loadbalancerController:
   replicaCount: 2
 
   image:
-    repository: sumon124816/openstack
-    tag: lb-test
-    pullPolicy: Always
+    repository: ghcr.io/kube-virt/loadbalancer-controller
+    tag: v0.1.0-ac
+    pullPolicy: IfNotPresent
 
   serviceAccountName: loadbalancer-controller
 
@@ -37,18 +37,18 @@ loadbalancerController:
 # openstack-creds Secret (used only when mode=openstack)
 # -------------------------------------------------------------------
 openstackCreds:
-  osAuthUrl: "http://10.2.5.250:5000"
+  osAuthUrl: ""
   osUsername: "admin"
-  osPassword: "XjdoF7qgIiY0virvzx5XdhtO3fzAMo1yVTjGn9Zz"
+  osPassword: ""
   osDomainName: "Default"
   osRegionName: "RegionOne"
-  osProjectId: "779d9954e19740f99d2b5be81976bedc"
+  osProjectId: ""
 
 # -------------------------------------------------------------------
 # db-credentials Secret
 # -------------------------------------------------------------------
 dbCredentials:
-  dbHost: "10.2.5.250"
+  dbHost: ""
   dbPort: "3306"
   dbUser: "lbapi"
   dbPassword: "LbApiStrongPass123!"
@@ -65,16 +65,15 @@ harvester:
   # Paste the full kubeconfig as a multiline string value, or leave
   # empty and create the secret manually.
   kubeconfig: |
-
 # -------------------------------------------------------------------
 # keepalived-grpc DaemonSet
 # -------------------------------------------------------------------
 keepalivedGrpc:
 
   image:
-    repository: sumon124816/openstack
-    tag: keepalived-test
-    pullPolicy: Always
+    repository: ghcr.io/kube-virt/keepalived
+    tag: v0.1.0-ac
+    pullPolicy: IfNotPresent
 
   hostNetwork: true
   hostPID: true
