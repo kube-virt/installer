@@ -1,0 +1,17 @@
+Thank you for installing {{ .Chart.Name }} ({{ .Chart.AppVersion }}).
+
+The following components have been deployed:
+
+  1. Deployment  : loadbalancer-controller  (namespace: {{ .Release.Namespace }})
+  2. DaemonSet   : keepalived-grpc       (namespace: {{ .Release.Namespace }})
+  3. Secret      : openstack-creds       (namespace: {{ .Release.Namespace }})
+  4. Secret      : db-credentials        (namespace: {{ .Release.Namespace }})
+
+To verify that loadbalancer-controller is running:
+
+  kubectl get deployment loadbalancer-controller --namespace {{ .Release.Namespace }}
+
+To verify that keepalived-grpc DaemonSet is running:
+
+  kubectl get daemonset keepalived-grpc --namespace {{ .Release.Namespace }}
+

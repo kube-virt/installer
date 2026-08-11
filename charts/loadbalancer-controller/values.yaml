@@ -1,0 +1,88 @@
+# Default values for loadbalancer-controller.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# -------------------------------------------------------------------
+# Mode: "openstack" or "harvester"
+# In harvester mode, a kubeconfig secret is mounted; openstack-creds
+# are NOT used.
+# -------------------------------------------------------------------
+mode: harvester   # openstack | harvester
+
+# -------------------------------------------------------------------
+# loadbalancer-controller Deployment
+# -------------------------------------------------------------------
+loadbalancerController:
+  replicaCount: 2
+
+  image:
+    repository: ghcr.io/kube-virt/loadbalancer-controller
+    tag: v0.1.0-ac
+    pullPolicy: IfNotPresent
+
+  serviceAccountName: loadbalancer-controller
+
+  env:
+    osTenantId: ""
+    osNetworkId: ""
+    osSubnetId: ""
+    clusterNamespace: "new"
+
+  resources: {}
+
+# -------------------------------------------------------------------
+# openstack-creds Secret (used only when mode=openstack)
+# -------------------------------------------------------------------
+openstackCreds:
+  osAuthUrl: ""
+  osUsername: "admin"
+  osPassword: ""
+  osDomainName: "Default"
+  osRegionName: "RegionOne"
+  osProjectId: ""
+
+# -------------------------------------------------------------------
+# db-credentials Secret
+# -------------------------------------------------------------------
+dbCredentials:
+  dbHost: ""
+  dbPort: "3306"
+  dbUser: "lbapi"
+  dbPassword: "LbApiStrongPass123!"
+  dbName: "lbapi"
+  dbSslmode: "disable"
+
+# -------------------------------------------------------------------
+# harvester kubeconfig (used only when mode=harvester)
+# The kubeconfig content is stored in a Secret and mounted into the
+# controller pod at /etc/harvester/kubeconfig.
+# -------------------------------------------------------------------
+harvester:
+  kubeconfigSecretName: harvester-kubeconfig
+  # Paste the full kubeconfig as a multiline string value, or leave
+  # empty and create the secret manually.
+  kubeconfig: |
+# -------------------------------------------------------------------
+# keepalived-grpc DaemonSet
+# -------------------------------------------------------------------
+keepalivedGrpc:
+
+  image:
+    repository: ghcr.io/kube-virt/keepalived
+    tag: v0.1.0-ac
+    pullPolicy: IfNotPresent
+
+  hostNetwork: true
+  hostPID: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  # hostPath for keepalived config directory
+  keepalivedConfigPath: /etc/keepalived
+

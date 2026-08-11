@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: loadbalancer-controller
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: loadbalancer-controller-role
+rules:
+  # ── LoadBalancerClaim ─────────────────────────────────────────
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["loadbalancerclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["loadbalancerclaims/status", "loadbalancerclaims/finalizers"]
+    verbs: ["get", "update", "patch"]
+
+  # ── TrunkPortClaim ────────────────────────────────────────────
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["trunkportclaims"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["trunkportclaims/status", "trunkportclaims/finalizers"]
+    verbs: ["get", "update", "patch"]
+
+  # ── GatewayClass ──────────────────────────────────────────────
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses/status", "gatewayclasses/finalizers"]
+    verbs: ["get", "update", "patch"]
+
+  # ── Gateway API routes ────────────────────────────────────────
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gateways", "httproutes", "tcproutes", "udproutes"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── Envoy Gateway resources ───────────────────────────────────
+  - apiGroups: ["gateway.envoyproxy.io"]
+    resources: ["envoyproxies", "backends", "backendtrafficpolicies", "clienttrafficpolicies", "envoypatchpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── KeepalivedConfig (read/write — controller creates these) ──
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["keepalivedconfigs", "keepalivedconfigs/status"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── Core: namespaces, secrets, serviceaccounts, configmaps, services
+  - apiGroups: [""]
+    resources: ["namespaces", "secrets", "serviceaccounts", "configmaps", "services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── Core: pods, nodes (read-only) ─────────────────────────────
+  - apiGroups: [""]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+
+  # ── Events (leader election + controller-runtime) ─────────────
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+  # ── Deployments + ReplicaSets (dummy deployment, Helm rollout tracking) ─
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── RBAC (EG chart creates its own ServiceAccount + roles) ────
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "roles"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "escalate", "bind"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterrolebindings", "rolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── Admission webhooks + policies (EG chart installs webhooks) ─
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations",
+                "validatingadmissionpolicies", "validatingadmissionpolicybindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── Batch jobs (EG chart certgen post-install hook) ───────────
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ── Leader election lease ──────────────────────────────────────
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: loadbalancer-controller-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: loadbalancer-controller-role
+subjects:
+  - kind: ServiceAccount
+    name: loadbalancer-controller
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keepalived-grpc
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: keepalived-grpc-role
+rules:
+  - apiGroups: ["networking.appscode.com"]
+    resources: ["keepalivedconfigs", "keepalivedconfigs/status"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: keepalived-grpc-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keepalived-grpc-role
+subjects:
+  - kind: ServiceAccount
+    name: keepalived-grpc
+    namespace: {{ .Release.Namespace }}

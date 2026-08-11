@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadbalancer-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: loadbalancer-controller
+    {{- include "loadbalancer-controller.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.loadbalancerController.replicaCount }}
+  selector:
+    matchLabels:
+      app: loadbalancer-controller
+  template:
+    metadata:
+      labels:
+        app: loadbalancer-controller
+    spec:
+      serviceAccountName: {{ .Values.loadbalancerController.serviceAccountName }}
+      containers:
+        - name: manager
+          image: "{{ .Values.loadbalancerController.image.repository }}:{{ .Values.loadbalancerController.image.tag }}"
+          imagePullPolicy: {{ .Values.loadbalancerController.image.pullPolicy }}
+          ports:
+            - containerPort: 50052
+          command:
+            - /manager
+            - --leader-elect=true
+          envFrom:
+            - secretRef:
+                name: openstack-creds
+            - secretRef:
+                name: db-credentials
+          env:
+            - name: MODE
+              value: {{ .Values.mode | quote }}
+            {{- if eq .Values.mode "openstack"}}
+            - name: OS_TENANT_ID
+              value: {{ .Values.loadbalancerController.env.osTenantId | quote }}
+            - name: OS_NETWORK_ID
+              value: {{ .Values.loadbalancerController.env.osNetworkId | quote }}
+            - name: OS_SUBNET_ID
+              value: {{ .Values.loadbalancerController.env.osSubnetId | quote }}
+            {{- end }}
+            - name: CLUSTER_NAMESPACE
+              value: {{ .Values.loadbalancerController.env.clusterNamespace | quote }}
+            {{- if eq .Values.mode "harvester" }}
+            - name: HARVESTER_KUBECONFIG
+              value: /etc/harvester/kubeconfig
+            {{- end }}
+            {{- if eq .Values.mode "harvester" }}
+          volumeMounts:
+            - name: harvester-kubeconfig
+              mountPath: /etc/harvester
+              readOnly: true
+          {{- end }}
+          {{- with .Values.loadbalancerController.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: loadbalancer-controller
+                topologyKey: kubernetes.io/hostname
+      {{- if eq .Values.mode "harvester" }}
+      volumes:
+        - name: harvester-kubeconfig
+          secret:
+            secretName: {{ .Values.harvester.kubeconfigSecretName }}
+      {{- end }}
