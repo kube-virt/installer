@@ -7,8 +7,8 @@
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search repo appscode/loadbalancer-controller --version=v0.1.0
-$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0
+$ helm search repo appscode/loadbalancer-controller --version=v0.1.0-ac
+$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0-ac
 ```
 
 ## Introduction
@@ -24,7 +24,7 @@ This chart deploys a LoadBalancer controller on a [Kubernetes](http://kubernetes
 To install/upgrade the chart with the release name `loadbalancer-controller`:
 
 ```bash
-$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0
+$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0-ac
 ```
 
 The command deploys a LoadBalancer controller on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
@@ -87,12 +87,12 @@ The following table lists the configurable parameters of the `loadbalancer-contr
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm upgrade -i`. For example:
 
 ```bash
-$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0 --set mode=harvester # openstack | harvester
+$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0-ac --set mode=harvester # openstack | harvester
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
 ```bash
-$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0 --values values.yaml
+$ helm upgrade -i loadbalancer-controller appscode/loadbalancer-controller -n loadbalancer-controller --create-namespace --version=v0.1.0-ac --values values.yaml
 ```
